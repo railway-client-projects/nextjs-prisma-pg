@@ -1,18 +1,15 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-model Todo {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  text      String
-  completed Boolean
+model employees {
+  id         Int     @id(map: "employees_pk") @default(autoincrement())
+  first_name String  @db.VarChar(30)
+  last_name  String  @db.VarChar(30)
+  email      String? @unique(map: "employees_email_uindex") @db.VarChar(70)
 }
