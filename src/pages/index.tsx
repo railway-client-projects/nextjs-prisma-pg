@@ -1,73 +1,22 @@
-import { NextPage } from "next";
+import { GetServerSideProps, GetServerSidePropsContext, NextPage } from "next";
 import Head from "next/head";
-import { useMemo, useState } from "react";
-import { createTodo, deleteTodo, toggleTodo, useTodos } from "../api";
+import { useEffect } from "react";
 import styles from "../styles/Home.module.css";
-import { Todo } from "../types";
+import { getEmps } from "./api/Employees";
+import { prismaClientInit } from "../services/PrismaClientInit";
 
-export const TodoList: React.FC = () => {
-  const { data: todos, error } = useTodos();
-
-  if (error != null) return <div>Error loading todos...</div>;
-  if (todos == null) return <div>Loading...</div>;
-
-  if (todos.length === 0) {
-    return <div className={styles.emptyState}>Try adding a todo ☝️️</div>;
-  }
-
-  return (
-    <ul className={styles.todoList}>
-      {todos.map(todo => (
-        <TodoItem todo={todo} />
-      ))}
-    </ul>
-  );
+type Props = {
+  emps: any;
 };
 
-const TodoItem: React.FC<{ todo: Todo }> = ({ todo }) => (
-  <li className={styles.todo}>
-    <label
-      className={`${styles.label} ${todo.completed ? styles.checked : ""}`}
-    >
-      <input
-        type="checkbox"
-        checked={todo.completed}
-        className={`${styles.checkbox}`}
-        onChange={() => toggleTodo(todo)}
-      />
-      {todo.text}
-    </label>
+const Home: NextPage = ({ emps }: Props) => {
+  useEffect(() => {
+    console.log("emps page ishere");
+    if (emps) {
+      console.log(emps);
+    }
+  }, []);
 
-    <button className={styles.deleteButton} onClick={() => deleteTodo(todo.id)}>
-      ✕
-    </button>
-  </li>
-);
-
-const AddTodoInput = () => {
-  const [text, setText] = useState("");
-
-  return (
-    <form
-      onSubmit={async e => {
-        e.preventDefault();
-        createTodo(text);
-        setText("");
-      }}
-      className={styles.addTodo}
-    >
-      <input
-        className={styles.input}
-        placeholder="Buy some milk"
-        value={text}
-        onChange={e => setText(e.target.value)}
-      />
-      <button className={styles.addButton}>Add</button>
-    </form>
-  );
-};
-
-const Home: NextPage = () => {
   return (
     <div className={styles.container}>
       <Head>
@@ -76,7 +25,7 @@ const Home: NextPage = () => {
       </Head>
 
       <header className={styles.header}>
-        <h1 className={styles.title}>Todos</h1>
+        <h1 className={styles.title}>Employees App</h1>
         <h2 className={styles.desc}>
           NextJS app connected to Postgres using Prisma and hosted on{" "}
           <a href="https://railway.app">Railway</a>
@@ -84,12 +33,32 @@ const Home: NextPage = () => {
       </header>
 
       <main className={styles.main}>
-        <AddTodoInput />
-
-        <TodoList />
+        {emps && (
+          <ul>
+            {emps &&
+              emps.map((ele) => (
+                <li key={ele.id}>{ele.id + " - " + ele.email}</li>
+              ))}
+          </ul>
+        )}
+        {!emps && <p>Loading ...</p>}
       </main>
     </div>
   );
 };
 
 export default Home;
+
+export const getServerSideProps: GetServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  console.log("call data from server");
+
+  const res = await prismaClientInit().employees.findMany();
+  console.log(res);
+  return {
+    props: {
+      emps: res,
+    },
+  };
+};
