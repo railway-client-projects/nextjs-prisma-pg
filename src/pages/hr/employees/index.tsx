@@ -3,6 +3,7 @@ import { Resend } from "resend";
 
 const resend = new Resend("re_jYC7HXS5_3aJ36AEybCXrwSGtVvsWjRzN");
 const Employees = () => {
+  
   const sendEmail = async () => {
     try {
       let res = await resend.emails.send({
